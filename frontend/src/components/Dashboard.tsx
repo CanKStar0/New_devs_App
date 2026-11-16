@@ -30,8 +30,12 @@ const PERIOD_OPTIONS = [
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const tenantId = (user as { tenant_id?: string } | null)?.tenant_id || 'tenant-a';
+  const initialTenant =
+    (user as { tenant_id?: string; app_metadata?: { tenant_id?: string } } | null)?.tenant_id ||
+    (user as { app_metadata?: { tenant_id?: string } } | null)?.app_metadata?.tenant_id ||
+    '';
 
+  const [tenantId, setTenantId] = useState(initialTenant);
   const [properties, setProperties] = useState<PropertyOption[]>([]);
   const [selectedProperty, setSelectedProperty] = useState('prop-001');
   const [selectedPeriod, setSelectedPeriod] = useState('2024-03');
@@ -51,6 +55,7 @@ const Dashboard: React.FC = () => {
     SecureAPI.getDashboardProperties()
       .then((res) => {
         if (!active) return;
+        if (res.tenant_id) setTenantId(res.tenant_id);
         const list = res.properties || [];
         setProperties(list);
         if (list.length > 0 && !list.some((p) => p.id === selectedProperty)) {
@@ -61,7 +66,7 @@ const Dashboard: React.FC = () => {
     return () => {
       active = false;
     };
-  }, [tenantId]);
+  }, [initialTenant]);
 
   useEffect(() => {
     let active = true;
