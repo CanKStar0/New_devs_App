@@ -1478,6 +1478,25 @@ export class SecureAPIClient {
     return this.request<any>(`/api/v1/dashboard/summary?${queryParams}`, requestOptions);
   }
 
+  async getDashboardProperties() {
+    return this.request<{ tenant_id: string; properties: Array<{ id: string; tenant_id: string; name: string; timezone: string }> }>(
+      '/api/v1/dashboard/properties'
+    );
+  }
+
+  async getDashboardReservations(options?: { propertyId?: string; month?: number; year?: number }) {
+    const queryParams = new URLSearchParams();
+    if (options?.propertyId) {
+      queryParams.append('property_id', options.propertyId);
+    }
+    if (options?.month !== undefined && options?.year !== undefined) {
+      queryParams.append('month', options.month.toString());
+      queryParams.append('year', options.year.toString());
+    }
+    const qs = queryParams.toString();
+    return this.request<any>(`/api/v1/dashboard/reservations${qs ? `?${qs}` : ''}`);
+  }
+
   async uploadCompanyLogo(logo_url: string) {
     return this.request<any>('/api/v1/company-settings/logo', {
       method: 'POST',
